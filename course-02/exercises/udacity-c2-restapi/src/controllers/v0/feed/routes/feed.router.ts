@@ -28,8 +28,24 @@ router.get('/:id',
 router.patch('/:id', 
     requireAuth, 
     async (req: Request, res: Response) => {
-        //@TODO try it yourself
-        res.send(500).send("not implemented")
+        let { id } = req.params;
+        const { caption, url } = req.body;
+        let item = await FeedItem.findByPk(id);
+        if (!item) {
+            res.status(404).send(`id ${id} not found`);
+        }
+
+        if (caption) {
+            item.caption = caption;
+        }
+
+        if (url) {
+            item.url = url;
+        }
+
+        const saved_item = await item.save();
+
+        res.send(saved_item);
 });
 
 
