@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import { filter } from 'bluebird';
 
 (async () => {
 
@@ -28,6 +29,32 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
+
+  app.get("/filteredimage", async (req, res) => {
+
+    const { image_url } = req.query;
+
+    if (!image_url) {
+      res.status(400).send('image_url parameter is required.');
+    }
+
+    let result:string;
+
+    try {
+      result = await filterImageFromURL(image_url);
+    } catch(error) {
+      res.status(500).send('Unable to process your request. error: ' + error);
+    }
+
+    if (!result) {
+      res.status(404).send('image cannot be found at url ' + image_url );
+    }
+
+    res.sendFile(result, () => {
+      deleteLocalFiles([result]).catch(error => {console.error(error)});
+    });
+
+  });
 
   //! END @TODO1
   
